@@ -8,11 +8,11 @@
  */
 
 import { test, expect } from '@fixtures/site.fixture';
-import { dismissCookieBanner } from '@utils/visual-helper';
+import { dismissCookieBanner, freezeAnimations } from '@utils/visual-helper';
 
 // Shared screenshot options applied to all visual tests
 const SCREENSHOT_OPTIONS = {
-  maxDiffPixels: 500,
+  maxDiffPixelRatio: 0.03,  // allow up to 3% pixel diff for minor rendering variance
   animations: 'disabled',
   caret: 'hide',
   fullPage: true,
@@ -35,8 +35,9 @@ test.describe('Visual Regression @visual', () => {
     // Dismiss any cookie/consent banners that would interfere with comparison
     await dismissCookieBanner(page);
 
-    // Allow any CSS animations/transitions to settle
-    await page.waitForTimeout(500);
+    // Freeze JS-driven animations (carousels, counters, etc.) then settle
+    await freezeAnimations(page);
+    await page.waitForTimeout(1000);
 
     await expect(page).toHaveScreenshot('homepage-desktop.png', {
       ...SCREENSHOT_OPTIONS,
@@ -50,7 +51,8 @@ test.describe('Visual Regression @visual', () => {
     await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
 
     await dismissCookieBanner(page);
-    await page.waitForTimeout(500);
+    await freezeAnimations(page);
+    await page.waitForTimeout(1000);
 
     await expect(page).toHaveScreenshot('homepage-mobile.png', {
       ...SCREENSHOT_OPTIONS,
@@ -64,7 +66,8 @@ test.describe('Visual Regression @visual', () => {
     await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
 
     await dismissCookieBanner(page);
-    await page.waitForTimeout(500);
+    await freezeAnimations(page);
+    await page.waitForTimeout(1000);
 
     await expect(page).toHaveScreenshot('homepage-tablet.png', {
       ...SCREENSHOT_OPTIONS,

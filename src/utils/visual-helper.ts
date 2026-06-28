@@ -92,6 +92,37 @@ export async function setViewport(page: Page, viewport: ViewportName): Promise<v
   await page.setViewportSize(VIEWPORTS[viewport]);
 }
 
+// ── JS animation freeze ──────────────────────────────────────────────────────
+
+/**
+ * Freeze all JavaScript-driven animations on the page before taking a screenshot.
+ * CSS animations are already stopped by Playwright's `animations: 'disabled'` option,
+ * but JS timers (carousels, counters, scroll effects) need to be halted separately.
+ */
+export async function freezeAnimations(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    // Clear all active intervals and timeouts
+    const highId = window.setTimeout(() => {}, 0);
+    for (let i = 0; i <= highId; i++) {
+      window.clearTimeout(i);
+      window.clearInterval(i);
+    }
+
+    // Force all CSS animations and transitions to a stopped state
+    document.querySelectorAll<HTMLElement>('*').forEach((el) => {
+      el.style.animationPlayState = 'paused';
+      el.style.transitionDuration = '0s';
+      el.style.transitionDelay = '0s';
+    });
+
+    // Pause any auto-playing video or audio
+    document.querySelectorAll<HTMLMediaElement>('video, audio').forEach((m) => m.pause());
+  });
+
+  // Brief settle after freeze
+  await page.waitForTimeout(300);
+}
+
 // ── Cookie/banner dismissal ──────────────────────────────────────────────────
 
 /**

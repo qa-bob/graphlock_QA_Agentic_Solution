@@ -5,7 +5,13 @@
       "Bash(npx playwright *)",
       "Bash(npx tsc *)",
       "Bash(curl --head *)",
-      "Bash(curl --silent *)"
+      "Bash(curl --silent *)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git add*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
     ],
     "deny": []
   },

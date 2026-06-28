@@ -1,3 +1,7 @@
+---
+description: Refresh visual regression snapshot baselines after intentional site design changes. Run after confirmed UI updates before committing.
+---
+
 # /update-baseline
 
 Capture new visual regression baseline screenshots after intentional design changes.

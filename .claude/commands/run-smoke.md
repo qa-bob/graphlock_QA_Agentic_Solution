@@ -1,3 +1,7 @@
+---
+description: Run the @smoke test suite and display a formatted pass/fail summary table. Use for quick health checks, pre-PR verification, or after a site deployment.
+---
+
 # /run-smoke
 
 Run the smoke test suite and display a clean pass/fail summary.

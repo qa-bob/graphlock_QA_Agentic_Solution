@@ -1,83 +1,265 @@
 # GraphLock — QA Agentic Solution
 
-> Automated QA framework for [GraphLock](https://graphlock.com/) built with Playwright + TypeScript.
+> Playwright + TypeScript regression test suite for [GraphLock](https://graphlock.com/) — a scientific calculator mobile app company based in Phoenix, AZ.
+
+This repo is a Claude Code–native QA framework. It uses sub-agents, skills, and hooks to let AI autonomously analyze the live site, generate Page Object Model (POM) test code, and run the full regression suite.
 
 ---
 
-## 🏢 Company Profile
+## Company Profile
 
 | Field | Details |
 |-------|---------|
 | **Company** | GraphLock |
-| **Description** | Scientific calculator mobile app |
-| **Website** | [https://graphlock.com/](https://graphlock.com/) |
-| **LinkedIn** | [View Profile](https://www.linkedin.com/company/graphlock/) |
-| **City** | Phoenix |
-| **Founded** | 2015 |
-| **Funding** | Self-funded |
-| **Employees** | 1-10 |
-| **Industry** | — |
-| **Category** | — |
-| **Leaders** | Mallory Dyer (CEO/Founder), Joshua Dyer (COO) |
+| **Website** | [https://graphlock.com](https://graphlock.com) |
+| **Industry** | Mobile App / Scientific Calculator |
+| **Location** | Phoenix, AZ |
+| **Leadership** | Mallory Dyer (CEO/Founder), Joshua Dyer (COO) |
 
 ---
 
-## 🧪 QA Agentic Solution
+## What This Repo Tests
 
-This repository will contain a Playwright TypeScript test automation framework
-for **GraphLock**'s web application at https://graphlock.com/.
+Every publicly accessible feature of `https://graphlock.com` — without registering, logging in, or submitting any form:
 
-### Planned Test Coverage
-
-- [ ] Smoke tests
-- [ ] Functional tests
-- [ ] Regression suite
-- [ ] Accessibility checks
-- [ ] Performance baselines
-
-### Tech Stack
-
-- [Playwright](https://playwright.dev/) — browser automation
-- TypeScript — strongly typed test code
-- GitHub Actions — CI/CD pipeline
-- AI-assisted test generation via GitHub Copilot
+| Test Suite | Tag | What it covers |
+|-----------|-----|----------------|
+| Smoke | `@smoke` | Site loads, HTTPS, title, no JS errors |
+| Navigation | `@navigation` | Nav links, routing, menus |
+| Forms | `@forms` | Field interactions and validation (no submission) |
+| Functional | `@functional` | CTAs, pricing, features, accordions, video |
+| Visual | `@visual` | Screenshot regression across viewports |
+| Responsive | `@responsive` | Layout at mobile / tablet / desktop |
 
 ---
 
-## 🚀 Getting Started
+## Tech Stack
+
+| Tool | Purpose |
+|------|---------|
+| [Playwright](https://playwright.dev/) | Cross-browser automation |
+| TypeScript (strict mode) | Typed page objects and tests |
+| Page Object Model (POM) | One class per page/section in `src/pages/` |
+| Claude Code | Agentic test generation and site analysis |
+| GitHub Actions | CI on every push and PR |
+
+---
+
+## Prerequisites
+
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+- **Claude Code** (for agentic features) — install via `npm i -g @anthropic-ai/claude-code`
+- Git
+
+---
+
+## Developer Setup
 
 ```bash
-# Install dependencies
+# 1. Clone the repo
+git clone https://github.com/<org>/graphlock_QA_Agentic_Solution.git
+cd graphlock_QA_Agentic_Solution
+
+# 2. Install dependencies
 npm install
 
-# Install Playwright browsers
-npx playwright install
+# 3. Install Playwright browsers
+npx playwright install --with-deps
 
-# Run all tests
-npx playwright test
+# 4. (Optional) Copy env template
+cp .env.example .env
 
-# Run tests with UI
-npx playwright test --ui
+# 5. Verify TypeScript compiles
+npm run typecheck
+
+# 6. Run the smoke suite to confirm everything works
+npm run test:smoke
 ```
 
 ---
 
-## 📁 Project Structure
+## Running Tests
+
+```bash
+npm test                    # All tests (desktop + mobile + tablet)
+npm run test:smoke          # @smoke — fast availability checks
+npm run test:navigation     # @navigation — nav links and routing
+npm run test:forms          # @forms — field interactions, no submission
+npm run test:visual         # @visual — screenshot regression
+npm run test:responsive     # @responsive — layout at all viewports
+npm run test:headed         # Run with visible browser (debug mode)
+npm run report              # Open the last HTML report
+npm run baseline            # Update visual snapshot baselines
+npm run lint                # ESLint
+npm run typecheck           # TypeScript check (tsc --noEmit)
+```
+
+---
+
+## Project Structure
 
 ```
 graphlock_QA_Agentic_Solution/
+├── site.config.json          # Site URL, flags, and nav items
+├── playwright.config.ts      # Playwright projects: desktop / mobile / tablet
+├── global-setup.ts           # Global setup (runs once before all tests)
+├── CLAUDE.md                 # Claude Code project instructions
+├── AGENTS.md                 # Sub-agent documentation
+├── Skills.md                 # Skills and commands documentation
+│
+├── src/
+│   ├── pages/                # Page Object Model classes
+│   │   ├── base.page.ts      # BasePage — shared methods for all pages
+│   │   ├── home.page.ts      # HomePage
+│   │   ├── navigation.page.ts
+│   │   └── contact.page.ts
+│   ├── fixtures/
+│   │   └── site.fixture.ts   # Custom Playwright fixtures
+│   ├── utils/
+│   │   ├── link-checker.ts
+│   │   └── visual-helper.ts
+│   └── types/
+│       └── site-config.types.ts
+│
 ├── tests/
-│   ├── smoke/
-│   ├── functional/
-│   └── regression/
-├── pages/          # Page Object Models
-├── fixtures/       # Test data
-├── utils/          # Helpers
-├── playwright.config.ts
-├── package.json
-└── README.md
+│   ├── smoke/                # @smoke tests
+│   ├── navigation/           # @navigation tests
+│   ├── forms/                # @forms tests
+│   ├── functional/           # @functional tests
+│   ├── visual/               # @visual screenshot tests
+│   ├── responsive/           # @responsive layout tests
+│   └── custom/               # Site-specific tests (generated by agent)
+│
+├── .claude/
+│   ├── agents/               # Sub-agent definitions (YAML frontmatter + prompt)
+│   ├── commands/             # Slash command definitions (legacy; still supported)
+│   ├── rules/                # Path-scoped instruction rules
+│   ├── hooks/                # Shell hooks (pre-test reachability check)
+│   └── settings.json         # Project-level Claude Code settings
+│
+└── .github/
+    ├── workflows/
+    │   └── playwright.yml    # CI: runs full suite on push/PR
+    ├── PULL_REQUEST_TEMPLATE.md
+    └── ISSUE_TEMPLATE/
+        ├── bug_report.md
+        └── test_request.md
 ```
 
 ---
 
-*Generated as part of the Phoenix Startup QA Agentic Solutions project.*
+## Agentic Workflows (Claude Code)
+
+This repo is optimized for Claude Code. Start a session from the project root:
+
+```bash
+claude
+```
+
+Then use any of these slash commands:
+
+| Command | What it does |
+|---------|-------------|
+| `/analyze-site` | Crawl `https://graphlock.com`, populate `site.config.json` |
+| `/generate-full-suite` | Analyze the site and generate complete POM + all test suites |
+| `/run-smoke` | Run smoke tests and display a formatted pass/fail table |
+| `/update-baseline` | Refresh visual regression snapshot baselines |
+| `/generate-report` | Summarize the latest test results |
+
+See [Skills.md](./Skills.md) for full documentation on each command and [AGENTS.md](./AGENTS.md) for sub-agent details.
+
+---
+
+## Architecture: Page Object Model + OOP
+
+Every page or major section has its own class under `src/pages/`. Classes follow OOP principles:
+
+- **Inheritance** — all page objects extend `BasePage` (`src/pages/base.page.ts`)
+- **Encapsulation** — locators are `readonly` properties; navigation/interaction logic is in methods
+- **Separation of concerns** — assertions only live in test files, never in page objects
+
+```typescript
+// Example: How a test uses a page object
+import { test, expect } from '@fixtures/site.fixture';
+
+test('hero heading is visible @smoke', async ({ homePage }) => {
+  const heading = await homePage.getMainHeading();
+  expect(heading).toBeTruthy();
+});
+```
+
+Page objects must not contain `expect()` calls. Tests import page objects via the fixture at `src/fixtures/site.fixture.ts`, not directly.
+
+---
+
+## Contributor Rules
+
+### Before you start
+
+1. Read `site.config.json` to understand the target site's flags
+2. Run `npm run typecheck` — fix all TypeScript errors before pushing
+3. Run `npm run lint` — fix all lint errors before pushing
+4. Run `npm run test:smoke` — smoke suite must pass on your branch
+
+### Writing tests
+
+- **Always** use the custom fixture: `import { test, expect } from '@fixtures/site.fixture'`
+- **Always** tag tests with at least one of `@smoke`, `@navigation`, `@forms`, `@functional`, `@visual`, `@responsive`
+- **Never** hardcode the base URL — use `siteConfig.url` from the fixture
+- **Never** submit forms or create accounts
+- **Never** use `page.waitForTimeout()` — use auto-waiting or `waitForSelector`
+- **Never** put `expect()` inside page object methods
+
+### Adding a new page object
+
+1. Create `src/pages/<name>.page.ts` extending `BasePage`
+2. Add `readonly` locator properties
+3. Add action methods (no assertions)
+4. Register the page object in `src/fixtures/site.fixture.ts`
+5. Write tests in `tests/<category>/<name>.spec.ts`
+
+### Commits and PRs
+
+- Branch from `main`; target `main` for PRs
+- Use the PR template — fill in all sections
+- CI must be green before merge
+- Visual baseline changes must be intentional — include screenshots in the PR
+
+---
+
+## CI/CD
+
+GitHub Actions runs the full Playwright suite on every push and pull request. See `.github/workflows/playwright.yml`.
+
+- Artifacts: HTML test report and screenshots uploaded on failure
+- Sharding: desktop / mobile / tablet run as parallel jobs
+- The `@smoke` suite also runs as a separate fast gate
+
+---
+
+## Visual Regression Baselines
+
+Baseline screenshots are committed to the repo under `tests/visual/__snapshots__/`. When the site changes intentionally:
+
+```bash
+npm run baseline
+git add tests/visual/__snapshots__
+git commit -m "chore: update visual baselines"
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `npx playwright install` fails | Run with `--with-deps` flag |
+| Tests time out | Check site reachability; increase `timeout` in `playwright.config.ts` |
+| TypeScript errors | Run `npm run typecheck` for details |
+| Visual snapshot mismatch | Run `npm run baseline` if change is intentional |
+| Selector fails on live site | Run `/analyze-site` to regenerate selectors |
+
+---
+
+*Part of the Phoenix Startup QA Agentic Solutions project.*

@@ -1,5 +1,8 @@
 # QA Agentic Solution — Claude Code Instructions
 
+<!-- Sub-agent definitions: @AGENTS.md -->
+<!-- Skills and commands: @Skills.md -->
+
 This repository is a **Playwright + TypeScript regression test suite** for the website defined in `site.config.json`. It follows a **Page Object Model (POM)** architecture and is structured for agentic execution by Claude Code.
 
 ---

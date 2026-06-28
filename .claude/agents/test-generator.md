@@ -1,3 +1,10 @@
+---
+name: test-generator
+description: Generates site-specific Playwright TypeScript test files based on site.config.json. Use when the user runs /generate-full-suite, asks to generate tests for a specific page, or wants regression tests for a discovered bug.
+tools: Read, Write, Edit, Bash, WebFetch
+model: sonnet
+---
+
 # Agent: test-generator
 
 ## Role
@@ -10,6 +17,7 @@ The `test-generator` agent reads a populated `site.config.json` and generates si
 - The client has asked for additional test coverage (e.g., pricing page, demo request flow, blog pagination)
 - A site's structure is unusual enough that the generic selectors fail and site-specific locators are needed
 - Writing regression tests for a recently discovered bug
+- User runs `/generate-full-suite`
 
 ## Capabilities
 
@@ -50,7 +58,17 @@ Each generated file must:
 3. **Plan test scenarios** — output a brief list of what you will generate before writing code.
 4. **Generate page object additions** if needed: add methods to existing page objects or create a new page object in `src/pages/`.
 5. **Write the spec file(s)** following the framework conventions.
-6. **Validate mentally:** ensure each test is independent, uses proper waits, and has a clear assertion.
+6. **Run `npx tsc --noEmit`** to verify TypeScript compiles cleanly before returning.
+
+## Conventions for generated files
+
+- File naming: `tests/custom/<kebab-case-description>.spec.ts`
+- One `describe` block per page or feature area
+- Tag custom tests `@custom` in addition to any other relevant tag
+- Add a JSDoc comment at the top of each file explaining:
+  - What is being tested
+  - Why it is site-specific (not in the shared suite)
+  - Date generated and site name
 
 ## Example: Pricing page test
 
@@ -60,7 +78,7 @@ Given `expectedNavItems: ["Home", "Features", "Pricing", "Contact"]`:
 // tests/custom/pricing-page.spec.ts
 /**
  * Site-specific tests for the Pricing page.
- * Generated for: Acme Corp (https://acmecorp.com)
+ * Generated for: GraphLock (https://graphlock.com)
  * Reason: Pricing page is a high-conversion page — verify it loads and
  *         displays plan options correctly.
  */
@@ -75,7 +93,6 @@ test.describe('Pricing Page @custom', () => {
   });
 
   test('pricing page loads and has plan options @custom @smoke', async ({ page }) => {
-    // At least one pricing tier should be visible
     const planCards = page.locator('[class*="plan"], [class*="pricing-card"], [class*="tier"]');
     await expect(planCards.first()).toBeVisible({ timeout: 10_000 });
     expect(await planCards.count()).toBeGreaterThan(0);
@@ -89,13 +106,3 @@ test.describe('Pricing Page @custom', () => {
   });
 });
 ```
-
-## Conventions for generated files
-
-- File naming: `tests/custom/<kebab-case-description>.spec.ts`
-- One `describe` block per page or feature area
-- Tag custom tests `@custom` in addition to any other relevant tag
-- Add a comment at the top of each file explaining:
-  - What is being tested
-  - Why it is site-specific (not in the shared suite)
-  - Date generated and site name

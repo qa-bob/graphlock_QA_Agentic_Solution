@@ -1,3 +1,7 @@
+---
+description: Crawl the target website and produce a fully-populated site.config.json with nav items, forms, and flags. Use when onboarding a new site, verifying config after a redesign, or before writing new selectors.
+---
+
 # /analyze-site
 
 Analyze a live website and produce a fully-populated `site.config.json`.

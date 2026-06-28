@@ -1,0 +1,27 @@
+# CODEOWNERS — GraphLock QA Agentic Solution
+#
+# These owners are requested for review automatically on any PR
+# that touches the matching paths.
+#
+# Format: <path pattern>  <@user or @org/team>
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+*                           @rosmall
+
+# CI configuration
+.github/                    @rosmall
+
+# Claude Code configuration
+.claude/                    @rosmall
+CLAUDE.md                   @rosmall
+AGENTS.md                   @rosmall
+Skills.md                   @rosmall
+
+# Core framework files
+playwright.config.ts        @rosmall
+src/fixtures/               @rosmall
+src/types/                  @rosmall
+
+# Visual baselines require careful review
+tests/visual/               @rosmall

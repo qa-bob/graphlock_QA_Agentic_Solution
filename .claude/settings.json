@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx playwright *)",
+      "Bash(npx tsc *)",
+      "Bash(curl --head *)",
+      "Bash(curl --silent *)"
+    ],
+    "deny": []
+  },
+  "autoMemoryEnabled": true,
+  "hooks": {
+    "PreToolUse": []
+  }
+}

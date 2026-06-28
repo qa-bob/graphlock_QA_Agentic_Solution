@@ -1,0 +1,349 @@
+<title>GraphLock QA Report — 2026-06-27</title>
+<meta name="description" content="Playwright regression suite results: 63/69 tests passing across 5 suites. 6 site defects identified on graphlock.com.">
+
+<style>
+/* ── Tokens ─────────────────────────────────────────────────────────────── */
+:root {
+  --ground:    #080F1C;
+  --surface:   #0E1D32;
+  --surface-2: #142540;
+  --border:    #1B3050;
+  --text:      #B8CDE4;
+  --text-dim:  #4F6A84;
+  --accent:    #00B4D8;
+  --pass:      #1AB88C;
+  --fail:      #F0653A;
+  --warn:      #E8A020;
+  --mono: 'Courier New', 'Lucida Console', monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius: 0px;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--ground); color: var(--text); font-family: var(--sans); font-size: 16px; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; }
+
+/* ── Page shell ─────────────────────────────────────────────────────────── */
+.page { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.75rem 5rem; }
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.header { border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 0; }
+.header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; }
+.site-id { display: flex; flex-direction: column; gap: 0.3rem; }
+.site-name-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+.site-name { font-family: var(--mono); font-size: 1.05rem; font-weight: bold; color: var(--text); letter-spacing: 0.04em; }
+.site-url { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); margin-top: 0.15rem; }
+.run-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem; }
+.meta-pair { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+.meta-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); }
+.meta-value { font-family: var(--mono); font-size: 0.82rem; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ── Display panel ──────────────────────────────────────────────────────── */
+.display-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  margin-bottom: 2.5rem;
+  padding: 2rem 2.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 3.5rem;
+  align-items: center;
+}
+.display-readout { }
+.display-eyebrow { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.5rem; }
+.display-number {
+  font-family: var(--mono);
+  font-size: 5.5rem;
+  font-weight: bold;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 0 30px rgba(0, 180, 216, 0.45),
+    0 0 8px  rgba(0, 180, 216, 0.25);
+}
+.display-sub { font-family: var(--mono); font-size: 0.78rem; color: var(--text-dim); margin-top: 0.6rem; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.display-counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.counter { }
+.counter-value { font-family: var(--mono); font-size: 2rem; font-weight: bold; line-height: 1; font-variant-numeric: tabular-nums; }
+.counter-value.is-pass   { color: var(--pass); }
+.counter-value.is-fail   { color: var(--fail); }
+.counter-value.is-neutral { color: var(--text); }
+.counter-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-dim); margin-top: 0.35rem; }
+
+/* ── Section heading ────────────────────────────────────────────────────── */
+.section-heading {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1px;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.defect-badge {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fail);
+  border: 1px solid rgba(240,101,58,0.5);
+  padding: 0.15rem 0.45rem;
+  line-height: 1.4;
+}
+
+/* ── Suite grid ─────────────────────────────────────────────────────────── */
+.suite-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin-bottom: 2.5rem;
+}
+.suite-card {
+  background: var(--surface);
+  padding: 1.4rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.suite-tag { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+.suite-fraction { font-family: var(--mono); font-size: 1.45rem; font-weight: bold; font-variant-numeric: tabular-nums; line-height: 1; }
+.suite-fraction.all-pass  { color: var(--pass); }
+.suite-fraction.partial   { color: var(--fail); }
+.suite-detail  { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); margin-top: 0.1rem; }
+.suite-bar { height: 2px; background: var(--border); margin-top: 0.9rem; overflow: hidden; }
+.suite-bar-fill { height: 100%; }
+.suite-bar-fill.all-pass { background: var(--pass); }
+.suite-bar-fill.partial  { background: var(--fail); }
+
+/* ── Failure list ───────────────────────────────────────────────────────── */
+.failure-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); margin-bottom: 2.5rem; }
+.failure-item { background: var(--surface); display: grid; grid-template-columns: 3px 1fr; }
+.failure-stripe { background: var(--fail); }
+.failure-body { padding: 1.4rem 1.5rem; }
+.failure-name { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.3rem; line-height: 1.4; }
+.failure-suite-label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.75rem; }
+.project-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.9rem; }
+.project-chip { font-family: var(--mono); font-size: 0.62rem; color: var(--text-dim); background: var(--surface-2); border: 1px solid var(--border); padding: 0.12rem 0.45rem; letter-spacing: 0.06em; }
+.failure-detail { font-size: 0.82rem; color: var(--text-dim); line-height: 1.6; }
+.failure-detail code { font-family: var(--mono); font-size: 0.75rem; color: var(--warn); background: rgba(232,160,32,0.1); padding: 0.1rem 0.3rem; }
+.recommendation { margin-top: 0.9rem; padding: 0.85rem 1rem; background: var(--surface-2); border-left: 2px solid var(--accent); }
+.rec-label { font-family: var(--mono); font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.4rem; }
+.rec-text { font-size: 0.82rem; color: var(--text); line-height: 1.6; }
+.rec-text code { font-family: var(--mono); font-size: 0.75rem; color: var(--accent); }
+
+/* ── Slowest tests ──────────────────────────────────────────────────────── */
+.slowest-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 0; background: var(--border); margin-bottom: 2.5rem; }
+.slow-header { background: var(--surface-2); padding: 0.5rem 1rem; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); }
+.slow-row { background: var(--surface); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--text); display: contents; }
+.slow-row-name { background: var(--surface); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--text); border-top: 1px solid var(--border); }
+.slow-row-project { background: var(--surface); padding: 0.75rem 1rem; font-family: var(--mono); font-size: 0.72rem; color: var(--text-dim); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+.slow-row-duration { background: var(--surface); padding: 0.75rem 1rem; font-family: var(--mono); font-size: 0.82rem; color: var(--text); font-variant-numeric: tabular-nums; border-top: 1px solid var(--border); border-left: 1px solid var(--border); text-align: right; }
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.footer { border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+.footer-stack { font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim); letter-spacing: 0.06em; line-height: 1.6; }
+.footer-credit { font-family: var(--mono); font-size: 0.68rem; color: var(--text-dim); text-align: right; line-height: 1.6; }
+.footer-credit a { color: var(--accent); text-decoration: none; }
+.footer-credit a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.footer-credit a:hover { text-decoration: underline; }
+
+/* ── Overflow containers for wide content ───────────────────────────────── */
+.overflow-x { overflow-x: auto; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .display-panel    { grid-template-columns: 1fr; gap: 1.75rem 0; }
+  .display-number   { font-size: 4rem; }
+  .suite-grid       { grid-template-columns: repeat(3, 1fr); }
+  .run-meta         { align-items: flex-start; }
+  .header-row       { flex-direction: column; }
+  .footer           { flex-direction: column; align-items: flex-start; }
+  .footer-credit    { text-align: left; }
+}
+@media (max-width: 480px) {
+  .suite-grid { grid-template-columns: repeat(2, 1fr); }
+  .page       { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .display-number { text-shadow: none; }
+}
+</style>
+
+<div class="page">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-row">
+      <div class="site-id">
+        <span class="site-name-label">Client</span>
+        <span class="site-name">GraphLock</span>
+        <span class="site-url">https://graphlock.com</span>
+      </div>
+      <div class="run-meta">
+        <div class="meta-pair">
+          <span class="meta-label">Run date</span>
+          <span class="meta-value">2026-06-27</span>
+        </div>
+        <div class="meta-pair">
+          <span class="meta-label">Duration</span>
+          <span class="meta-value">2m 32.97s</span>
+        </div>
+        <div class="meta-pair">
+          <span class="meta-label">Projects</span>
+          <span class="meta-value">chromium · mobile-chrome · tablet</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Display readout ─────────────────────────────────────────────────── -->
+  <div class="display-panel">
+    <div class="display-readout">
+      <div class="display-eyebrow">Pass rate</div>
+      <div class="display-number">91.3%</div>
+      <div class="display-sub">63 of 69 tests passing</div>
+    </div>
+    <div class="display-counters">
+      <div class="counter">
+        <div class="counter-value is-pass">63</div>
+        <div class="counter-label">Passed</div>
+      </div>
+      <div class="counter">
+        <div class="counter-value is-fail">6</div>
+        <div class="counter-label">Failed</div>
+      </div>
+      <div class="counter">
+        <div class="counter-value is-neutral">0</div>
+        <div class="counter-label">Flaky</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Suite breakdown ─────────────────────────────────────────────────── -->
+  <div class="section-heading">Suite breakdown</div>
+  <div class="suite-grid overflow-x">
+    <div class="suite-card">
+      <div class="suite-tag">@smoke</div>
+      <div class="suite-fraction all-pass">15/15</div>
+      <div class="suite-detail">5 tests · 3 projects</div>
+      <div class="suite-bar"><div class="suite-bar-fill all-pass" style="width:100%"></div></div>
+    </div>
+    <div class="suite-card">
+      <div class="suite-tag">@navigation</div>
+      <div class="suite-fraction all-pass">15/15</div>
+      <div class="suite-detail">5 tests · 3 projects</div>
+      <div class="suite-bar"><div class="suite-bar-fill all-pass" style="width:100%"></div></div>
+    </div>
+    <div class="suite-card">
+      <div class="suite-tag">@forms</div>
+      <div class="suite-fraction all-pass">15/15</div>
+      <div class="suite-detail">5 tests · 3 projects</div>
+      <div class="suite-bar"><div class="suite-bar-fill all-pass" style="width:100%"></div></div>
+    </div>
+    <div class="suite-card">
+      <div class="suite-tag">@visual</div>
+      <div class="suite-fraction all-pass">9/9</div>
+      <div class="suite-detail">3 tests · 3 projects</div>
+      <div class="suite-bar"><div class="suite-bar-fill all-pass" style="width:100%"></div></div>
+    </div>
+    <div class="suite-card">
+      <div class="suite-tag">@responsive</div>
+      <div class="suite-fraction partial">9/15</div>
+      <div class="suite-detail">5 tests · 3 projects</div>
+      <div class="suite-bar"><div class="suite-bar-fill partial" style="width:60%"></div></div>
+    </div>
+  </div>
+
+  <!-- ── Failed tests ─────────────────────────────────────────────────────── -->
+  <div class="section-heading">
+    Failed tests
+    <span class="defect-badge">6 site defects</span>
+  </div>
+  <div class="failure-list">
+
+    <div class="failure-item">
+      <div class="failure-stripe"></div>
+      <div class="failure-body">
+        <div class="failure-name">text is readable (font-size ≥ 12px) on mobile</div>
+        <div class="failure-suite-label">@responsive · 3 failures</div>
+        <div class="project-chips">
+          <span class="project-chip">chromium-desktop</span>
+          <span class="project-chip">mobile-chrome</span>
+          <span class="project-chip">tablet</span>
+        </div>
+        <div class="failure-detail">
+          3 visible elements have <code>font-size &lt; 12px</code> at the 390px mobile viewport. All three Playwright browser projects reproduce the failure identically — this is a site-level CSS regression, not a test environment artifact.
+        </div>
+        <div class="recommendation">
+          <div class="rec-label">Recommended fix for GraphLock dev team</div>
+          <div class="rec-text">
+            Search responsive stylesheet for <code>font-size</code> values below <code>12px</code>, including computed <code>em</code>/<code>rem</code> values that scale small at mobile. Check <code>@media (max-width: 480px)</code> blocks. Minimum readable size is 12px per WCAG 1.4.4.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="failure-item">
+      <div class="failure-stripe"></div>
+      <div class="failure-body">
+        <div class="failure-name">images have alt attributes</div>
+        <div class="failure-suite-label">@responsive · 3 failures</div>
+        <div class="project-chips">
+          <span class="project-chip">chromium-desktop</span>
+          <span class="project-chip">mobile-chrome</span>
+          <span class="project-chip">tablet</span>
+        </div>
+        <div class="failure-detail">
+          28–30 <code>&lt;img&gt;</code> elements in the <code>app-screenshots/</code> gallery section are missing the <code>alt</code> attribute entirely. Note: <code>alt=""</code> is valid for decorative images — the violation here is a missing attribute, not an empty one. This fails WCAG 1.1.1 (Non-text Content).
+        </div>
+        <div class="recommendation">
+          <div class="rec-label">Recommended fix for GraphLock dev team</div>
+          <div class="rec-text">
+            Add descriptive <code>alt</code> text to each app screenshot (e.g. <code>alt="GraphLock calculator — scientific mode"</code>). For purely decorative images, use <code>alt=""</code> to tell screen readers to skip them. This is an accessibility bug; file with priority.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Slowest tests ────────────────────────────────────────────────────── -->
+  <div class="section-heading">Slowest tests</div>
+  <div class="overflow-x" style="margin-bottom:2.5rem">
+    <div class="slowest-grid">
+      <div class="slow-header">Test</div>
+      <div class="slow-header" style="border-left:1px solid var(--border)">Project</div>
+      <div class="slow-header" style="border-left:1px solid var(--border);text-align:right">Duration</div>
+      <div class="slow-row-name">all nav links are reachable (no 404s)</div>
+      <div class="slow-row-project">tablet</div>
+      <div class="slow-row-duration">8.2s</div>
+      <div class="slow-row-name">homepage visual regression — desktop</div>
+      <div class="slow-row-project">tablet</div>
+      <div class="slow-row-duration">8.1s</div>
+    </div>
+  </div>
+
+  <!-- ── Footer ───────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-stack">
+      Playwright · TypeScript · Page Object Model<br>
+      graphlock-qa-agentic-solution · branch main · commit 45d2f58
+    </div>
+    <div class="footer-credit">
+      Generated 2026-06-27 by Claude Code<br>
+      <a href="https://graphlock.com">graphlock.com</a>
+    </div>
+  </footer>
+
+</div>

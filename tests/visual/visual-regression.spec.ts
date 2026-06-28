@@ -10,12 +10,15 @@
 import { test, expect } from '@fixtures/site.fixture';
 import { dismissCookieBanner, freezeAnimations } from '@utils/visual-helper';
 
-// Shared screenshot options applied to all visual tests
+// Shared screenshot options applied to all visual tests.
+// fullPage is intentionally false: capturing only the visible viewport produces
+// a stable fixed-size image regardless of dynamic content below the fold
+// (carousels, lazy-loaded sections, and counters can shift the document height).
 const SCREENSHOT_OPTIONS = {
-  maxDiffPixelRatio: 0.03,  // allow up to 3% pixel diff for minor rendering variance
+  maxDiffPixelRatio: 0.03,
   animations: 'disabled',
   caret: 'hide',
-  fullPage: true,
+  fullPage: false,
 } as const;
 
 test.describe('Visual Regression @visual', () => {
@@ -30,7 +33,7 @@ test.describe('Visual Regression @visual', () => {
 
   test('homepage visual regression - desktop @visual', async ({ page, siteConfig }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
 
     // Dismiss any cookie/consent banners that would interfere with comparison
     await dismissCookieBanner(page);
@@ -48,7 +51,7 @@ test.describe('Visual Regression @visual', () => {
 
   test('homepage visual regression - mobile @visual', async ({ page, siteConfig }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
 
     await dismissCookieBanner(page);
     await freezeAnimations(page);
@@ -63,7 +66,7 @@ test.describe('Visual Regression @visual', () => {
 
   test('homepage visual regression - tablet @visual', async ({ page, siteConfig }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
 
     await dismissCookieBanner(page);
     await freezeAnimations(page);
